@@ -1,8 +1,8 @@
 {
-  "name": "gruppuppgift_node_basgrupp1",
+  "name": "Node.js_individuellt_projekt",
   "version": "1.0.0",
   "type": "module",
-  "description": "Dylan, Eric, Jonathan, Marina, Shahin, Sofia",
+  "description": "Marina",
   "main": "server.js",
   "scripts": {
     "server": "nodemon server",
