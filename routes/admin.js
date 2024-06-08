@@ -1,8 +1,10 @@
 import { Router } from "express";
 import {
-  deleteProduct,
-  addProduct,
   login,
+  getMenu,
+  addProduct,
+  changeProduct,
+  deleteProduct,
 } from "../controllers/adminController.js";
 import adminAuth from "../middleware/adminAuth.js";
 
@@ -11,13 +13,16 @@ const router = Router();
 // Log in admin
 router.post("/login", login);
 
-/* // Log out admin
-router.post("/logout", logout); */
+// Get menu
+router.get("/menu", getMenu);
 
 // Add a product to the menu
 router.post("/addProduct", adminAuth, addProduct);
 
+// Change a product in the menu
+router.put("/changeProduct/:itemId", adminAuth, changeProduct);
+
 // Delete a product from the menu
-router.delete("/deleteProduct/:productId", adminAuth, deleteProduct);
+router.delete("/deleteProduct/:itemId", adminAuth, deleteProduct);
 
 export default router;

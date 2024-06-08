@@ -2,23 +2,21 @@ import db from "../db/database.js";
 import menu from "../services/menu.js";
 
 // Function to move data from menu.js to menu.db
-async function clearMenu() {
-  try {
-    // Removes all objects from menu.db
-    await db.menu.remove({}, { multi: true });
-    console.log("Database cleared successfully");
-  } catch (error) {
-    console.error("Error clearing database:", error);
-    throw error;
-  }
-}
 async function moveData() {
   try {
-    await clearMenu();
-    // Loop through each item in menu
+    // Fetch all items from database
+    const existingMenuItems = await db.menu.find({});
+
+    // Create a set of existing IDs for quick lookup
+    const existingIds = new Set(existingMenuItems.map((item) => item.id));
+
+    // Loop through each item in menu.js
     for (const menuItem of menu) {
-      // Insert item into menu.db
-      await db.menu.insert(menuItem);
+      // Check if the item already exists in the database
+      if (!existingIds.has(menuItem.id)) {
+        // Insert the item into menu.db if it doesn´t already exist
+        await db.menu.insert(menuItem);
+      }
     }
     console.log("Data moved successfully from menu.js to menu.db");
   } catch (error) {
@@ -27,6 +25,19 @@ async function moveData() {
 }
 
 moveData();
+
+// Get the menu
+
+const getMenu = async (req, res) => {
+  try {
+    // Fetch all items from the menu collection
+    const menuItems = await db.menu.find({});
+    return res.status(200).json(menuItems);
+  } catch (error) {
+    console.error("Error fetching menu:", error);
+    return res.status(500).json({ error: "Could not fetch menu." });
+  }
+};
 
 // Userobject for admin
 const adminUser = {
@@ -40,7 +51,7 @@ db.admin
   .findOne({ username: adminUser.username })
   .then((user) => {
     if (!user) {
-      // If admin-user doesn´t exist
+      // If admin-user doesn´t exist, add admin to admin.db
       return db.admin.insert(adminUser).then(() => {
         console.log("Admin user added successfully to admin.db");
       });
@@ -54,6 +65,7 @@ db.admin
   });
 
 // Login admin
+
 const login = async (req, res) => {
   // Get username and password from request body
   const { username, password } = req.body;
@@ -91,28 +103,54 @@ const login = async (req, res) => {
 };
 
 // Add product to menu
+
 const addProduct = async (req, res) => {
   try {
-    const { id, title, desc, price } = req.body;
+    const { id, title, desc, price, ...rest } = req.body;
+
     // Check that all necessary properties are included in the request
     if (!id || !title || !desc || !price) {
       return res.status(400).json({
         error: "All properties must be included: id, title, desc, price.",
       });
     }
-    // Create new product with createdAt
+
+    // Check for any additional properties
+    const allowedProperties = ["id", "title", "desc", "price"];
+    const receivedProperties = Object.keys(req.body);
+    const invalidProperties = receivedProperties.filter(
+      (prop) => !allowedProperties.includes(prop)
+    );
+
+    if (invalidProperties.length > 0) {
+      return res.status(400).json({
+        error: `Invalid properties: ${invalidProperties.join(
+          ", "
+        )}. Only id, title, desc, and price are allowed.`,
+      });
+    }
+
+    // Check if the id already exists in the database
+    const existingProduct = await db.menu.findOne({ _id: id });
+    if (existingProduct) {
+      return res.status(400).json({
+        error: "A product with this id already exists.",
+      });
+    }
+
+    // Create new product with createdAt and the provided id as _id
     const newProduct = {
-      id,
+      _id: id,
       title,
       desc,
       price,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toLocaleString("sv-SE", {
+        timeZone: "Europe/Stockholm",
+      }),
     };
+
     // Add new product to database
-    const insertedProduct = await db["menu"].insert({
-      type: "menu",
-      data: newProduct,
-    });
+    const insertedProduct = await db.menu.insert(newProduct);
     return res.status(201).json(insertedProduct);
   } catch (error) {
     console.error("Error adding product:", error);
@@ -121,12 +159,13 @@ const addProduct = async (req, res) => {
 };
 
 // Delete a product from the menu
+
 const deleteProduct = async (req, res) => {
   try {
-    const productId = req.params.productId;
+    const itemId = parseInt(req.params.itemId);
 
     // Find and remove the product from the menu
-    const numRemoved = await db.menu.remove({ _id: productId });
+    const numRemoved = await db.menu.remove({ _id: itemId });
 
     if (numRemoved === 0) {
       return res.status(404).json({ error: "Product was not found." });
@@ -139,4 +178,48 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-export { deleteProduct, addProduct, login };
+// Change product in menu
+
+const changeProduct = async (req, res) => {
+  try {
+    const itemId = parseInt(req.params.itemId); // Convert itemId to integer
+
+    const { title, desc, price } = req.body;
+
+    // Find the product in the menu based on its _id
+    const product = await db.menu.findOne({ _id: itemId });
+
+    // If the product does not exist, send an error message
+    if (!product) {
+      return res.status(404).json({ error: "Product was not found." });
+    }
+
+    // Update the product's information if there are any changes
+    if (title) product.title = title;
+    if (desc) product.desc = desc;
+    if (price) product.price = price;
+
+    // Update "modifiedAt" to the current timestamp
+    product.modifiedAt = new Date().toLocaleString("sv-SE", {
+      timeZone: "Europe/Stockholm",
+    });
+
+    // Save the updated product to the database
+    await db.menu.update({ _id: itemId }, product);
+
+    // If success - send a response
+    return res.status(200).json({
+      success: true,
+      message: "Item updated in menu",
+      item: product,
+    });
+  } catch (error) {
+    // Error message
+    console.error("Error changing product:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Could not change product." });
+  }
+};
+
+export { login, getMenu, addProduct, changeProduct, deleteProduct };
