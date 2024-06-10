@@ -186,6 +186,21 @@ const changeProduct = async (req, res) => {
 
     const { title, desc, price } = req.body;
 
+    // Checks if one of the fields are filled in
+    if (title === undefined && desc === undefined && price === undefined) {
+      return res.status(400).json({
+        message:
+          "At least one of title, description, or price must be provided.",
+      });
+    }
+
+    // Sends errormessage is user tries to edit product ID
+    if (req.body._id && req.body._id !== itemId) {
+      return res.status(400).json({
+        message: "Changing the product ID is not allowed.",
+      });
+    }
+
     // Find the product in the menu based on its _id
     const product = await db.menu.findOne({ _id: itemId });
 
@@ -222,4 +237,6 @@ const changeProduct = async (req, res) => {
   }
 };
 
-export { login, getMenu, addProduct, changeProduct, deleteProduct };
+const campaign = async (req, res) => {};
+
+export { login, getMenu, addProduct, changeProduct, deleteProduct, campaign };
