@@ -1,4 +1,5 @@
 # Airbean - Individuellt projekt
+Created by: Marina Rosenstiel
 
 Follow these steps to run the project:
 
