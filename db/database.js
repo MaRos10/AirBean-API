@@ -14,6 +14,7 @@ const database_names = [
   "completedOrder",
   "admin",
   "menu",
+  "campaigns",
 ];
 const db = {};
 

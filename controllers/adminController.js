@@ -237,6 +237,4 @@ const changeProduct = async (req, res) => {
   }
 };
 
-const campaign = async (req, res) => {};
-
-export { login, getMenu, addProduct, changeProduct, deleteProduct, campaign };
+export { login, getMenu, addProduct, changeProduct, deleteProduct };
