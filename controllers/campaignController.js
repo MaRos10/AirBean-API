@@ -36,7 +36,7 @@ const createCampaign = async (req, res) => {
       (sum, product) => sum + product.price,
       0
     );
-    const calculatedCampaignPrice = totalOriginalPrice * 0.9;
+    const calculatedCampaignPrice = (totalOriginalPrice * 0.9).toFixed(2);
 
     // Create and save the campaign
     const campaign = {
