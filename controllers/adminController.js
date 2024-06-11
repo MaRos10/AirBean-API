@@ -18,26 +18,12 @@ async function moveData() {
         await db.menu.insert(menuItem);
       }
     }
-    console.log("Data moved successfully from menu.js to menu.db");
   } catch (error) {
     console.error("Error moving data from menu.js to menu.db:", error);
   }
 }
 
 moveData();
-
-// Get the menu
-
-const getMenu = async (req, res) => {
-  try {
-    // Fetch all items from the menu collection
-    const menuItems = await db.menu.find({});
-    return res.status(200).json(menuItems);
-  } catch (error) {
-    console.error("Error fetching menu:", error);
-    return res.status(500).json({ error: "Could not fetch menu." });
-  }
-};
 
 // Userobject for admin
 const adminUser = {
@@ -56,15 +42,27 @@ db.admin
         console.log("Admin user added successfully to admin.db");
       });
     } else {
-      console.log("Admin user already exists in admin.db");
-      return Promise.resolve(); // Undviker att nästa then-block körs om anv finns
+      // Returns a resolved promise
+      return Promise.resolve();
     }
   })
   .catch((err) => {
     console.error("Error adding admin user to admin.db:", err);
   });
 
-// Login admin
+/* ----------   Get the menu ---------- */
+
+const getMenu = async (req, res) => {
+  try {
+    // Fetch all items from the menu collection
+    const menuItems = await db.menu.find({});
+    return res.status(200).json(menuItems);
+  } catch (error) {
+    return res.status(500).json({ error: "Could not fetch menu." });
+  }
+};
+
+/* ----------   Log in admin ---------- */
 
 const login = async (req, res) => {
   // Get username and password from request body
@@ -96,13 +94,12 @@ const login = async (req, res) => {
       });
     }
   } catch (error) {
-    // Logging error message in console
-    console.error(error);
+    // Error message if login fails
     return res.status(500).send(`Login failed.`);
   }
 };
 
-// Add product to menu
+/* ----------   Add product to menu ---------- */
 
 const addProduct = async (req, res) => {
   try {
@@ -153,12 +150,11 @@ const addProduct = async (req, res) => {
     const insertedProduct = await db.menu.insert(newProduct);
     return res.status(201).json(insertedProduct);
   } catch (error) {
-    console.error("Error adding product:", error);
     return res.status(500).json({ error: "Could not add product." });
   }
 };
 
-// Delete a product from the menu
+/* ----------   Delete a product from the menu ---------- */
 
 const deleteProduct = async (req, res) => {
   try {
@@ -173,16 +169,16 @@ const deleteProduct = async (req, res) => {
 
     return res.status(200).json({ message: "Product has been removed." });
   } catch (error) {
-    console.error("Error deleting product:", error);
     return res.status(500).json({ error: "Could not delete product." });
   }
 };
 
-// Change product in menu
+/* ----------   Change product in menu ---------- */
 
 const changeProduct = async (req, res) => {
   try {
-    const itemId = parseInt(req.params.itemId); // Convert itemId to integer
+    // Convert itemId to integer
+    const itemId = parseInt(req.params.itemId);
 
     const { title, desc, price } = req.body;
 
@@ -190,7 +186,7 @@ const changeProduct = async (req, res) => {
     if (title === undefined && desc === undefined && price === undefined) {
       return res.status(400).json({
         message:
-          "At least one of title, description, or price must be provided.",
+          "At least one of title, description or price must be provided.",
       });
     }
 

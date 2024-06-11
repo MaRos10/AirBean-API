@@ -1,5 +1,7 @@
 import db from "../db/database.js";
 
+/* ----------   Controller to add campaign ---------- */
+
 // Checks if the products exists in menu database
 const validateProducts = async (productIds) => {
   try {
@@ -55,7 +57,6 @@ const createCampaign = async (req, res) => {
       campaign: newCampaign,
     });
   } catch (error) {
-    console.error("Error adding campaign:", error);
     return res.status(500).json({ error: "Could not add campaign." });
   }
 };
