@@ -160,7 +160,7 @@ To complete your order use sendOrder with your order id as a param. Order will b
 http://localhost:8000/api/order/getCart/:orderId  
 Method: GET
 
-When you create an order in createOrder you’ll receive an orderId. Copy that orderId and paste it at the end of the URL as a param.
+When you create an order in createOrder you’ll receive an orderId. Copy that orderId and paste it at the end of the URL as a param to retrieve current items in cart.
 
 ### Add item cart:
 
