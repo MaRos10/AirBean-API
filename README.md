@@ -1,4 +1,4 @@
-# Airbean - Individuellt projekt
+# Airbean - Individuellt projekt i kursen 'Backend med Node.js'
 
 #### Created by: Marina Rosenstiel
 
